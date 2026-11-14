@@ -1,0 +1,19 @@
+[Unit]
+Description=CapBody Counter workspace and inference API
+After=network.target
+
+[Service]
+Type=simple
+WorkingDirectory=%h/Music/CountGDPlusPlus
+ExecStart=%h/Music/CountGDPlusPlus/serve.sh
+Environment=COUNT_DEVICE=cpu
+Environment=COUNT_THREADS=4
+Environment=COUNT_PYTHON=%h/Music/whisper/.venv/bin/python
+EnvironmentFile=-%h/.config/countgdplusplus.env
+Restart=on-failure
+RestartSec=5
+TimeoutStopSec=30
+UMask=0077
+
+[Install]
+WantedBy=default.target

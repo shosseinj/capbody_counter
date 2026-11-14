@@ -1,0 +1,21 @@
+CapBody Counter
+Copyright (c) 2026 CapBody Counter contributors
+
+The application, cap–body geometry matching, review workflow, exports, and
+evaluation tools are additions to the CountGD++ inference implementation.
+
+CountGD++: Generalized Prompting for Open-World Counting
+Copyright (c) 2025 Niki Amini-Naieni
+Authors: Niki Amini-Naieni and Andrew Zisserman
+Source: https://github.com/niki-amini-naieni/CountGDPlusPlus
+Weights: https://huggingface.co/nikigoli/CountGDPlusPlus
+License: MIT (see LICENSE)
+
+The retained model files also contain Grounding DINO, Conditional DETR and
+Deformable DETR code credited to IDEA Research, Microsoft, Facebook and
+SenseTime in their source headers. Applicable Apache 2.0 terms are included
+in licenses/Apache-2.0.txt. Original attribution headers have been retained;
+modified model files carry a modification notice.
+
+CountGD++ architecture and pretrained weights were not created by the
+CapBody Counter contributors. No endorsement by upstream authors is implied.

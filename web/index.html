@@ -1,0 +1,62 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="theme-color" content="#153e34">
+  <meta name="description" content="Count upright bottles by pairing bodies and caps, then review the evidence.">
+  <title>CapBody Counter — count with evidence</title>
+  <link rel="stylesheet" href="/assets/style.css">
+  <script type="module" src="/assets/app.mjs"></script>
+</head>
+<body>
+<header class="topbar">
+  <a class="wordmark" href="/" aria-label="CapBody Counter home"><span class="brand-icon" aria-hidden="true"><i></i><b></b></span>CapBody<span class="wordmark-light">Counter</span><span class="lab-tag">LAB</span></a>
+  <nav aria-label="Main"><a href="#workspace" class="active">Workspace</a><button id="method-button">How it works ↗</button><a href="/docs" target="_blank" rel="noopener">API ↗</a></nav>
+  <span class="engine" id="engine"><span></span>Connecting</span>
+</header>
+<main>
+  <section class="intro"><div><p class="eyebrow">OBJECT COUNTING / HUMAN IN THE LOOP</p><h1>Count with <em>evidence.</em></h1><p class="subtitle">Pair bottle bodies with visible caps. Review what remains.</p></div><div class="intro-note"><span class="small-icon">↳</span><p>One bottle. One count.<br><span>Even when only the cap is visible.</span></p></div></section>
+  <div class="stats" aria-live="polite">
+    <article><div><span class="stat-label">AUTOMATIC COUNT</span><strong id="auto-count">—</strong></div><span class="stat-hint">Unique body detections</span></article>
+    <article class="review-stat"><div><span class="stat-label">NEEDS REVIEW</span><strong id="review-count">—</strong></div><span class="stat-hint">Not included until confirmed</span></article>
+    <article class="current-stat"><div><span class="stat-label">CURRENT COUNT</span><strong id="current-count">—</strong></div><span class="stat-hint" id="count-status">Analyze an image to begin</span></article>
+  </div>
+  <section class="workspace" id="workspace" aria-label="Counting workspace">
+    <aside class="setup panel">
+      <div class="panel-heading"><span class="step">01</span><h2>Set up your image</h2></div>
+      <label class="upload" id="drop-zone" tabindex="0"><input id="image-input" type="file" accept="image/png,image/jpeg,image/webp"><span class="upload-icon">↥</span><strong>Choose an image</strong><span>or drop it here · up to 15 MB</span></label>
+      <div class="file-meta" id="file-meta">Your image stays on this machine.</div>
+      <label class="field-label" for="mode">COUNTING METHOD</label>
+      <select id="mode"><option value="cap_body">Cap + body matching</option><option value="standard">Standard CountGD++</option></select>
+      <div id="example-controls">
+        <p class="field-label">MARK EXAMPLES</p>
+        <div class="tool-list" role="group" aria-label="Example tools"><button id="cap-tool" class="tool active" data-tool="cap"><span class="tool-swatch cap"></span>Cap example<span id="cap-example-count">0 / 3</span></button><button id="body-tool" class="tool" data-tool="body"><span class="tool-swatch body"></span>Body example<span id="body-example-count">optional</span></button></div>
+        <p class="help">Draw 1–3 close-fitting cap boxes. Add body examples if the bottles are unfamiliar.</p>
+        <button id="clear-examples" class="text-button">Clear examples</button>
+      </div>
+      <div id="standard-controls" hidden><label class="field-label" for="prompt">WHAT TO COUNT</label><input id="prompt" value="plastic bottle" maxlength="500" placeholder="e.g. plastic bottle"></div>
+      <details class="settings"><summary>Detection settings <span>+</span></summary><label for="body-threshold">Body confidence <output id="body-threshold-value">0.23</output></label><input id="body-threshold" type="range" min="0.05" max="0.9" step="0.01" value="0.23"><label for="cap-threshold">Cap confidence <output id="cap-threshold-value">0.23</output></label><input id="cap-threshold" type="range" min="0.05" max="0.9" step="0.01" value="0.23"></details>
+      <button class="primary analyze" id="analyze" disabled>Analyze image <span>↗</span></button>
+      <p class="compute-note" id="compute-note">Two model passes · CPU inference</p>
+      <div class="privacy-note"><b>Designed for visible evidence.</b><br>Fully hidden inventory is not estimated. Review model predictions before using a total.</div>
+    </aside>
+    <section class="image-panel panel" aria-label="Image and annotations">
+      <div class="image-toolbar"><div><span class="step">02</span><span id="canvas-title">Mark examples</span></div><div class="view-actions"><button id="undo" aria-label="Undo" title="Undo (Ctrl+Z)" disabled>↶</button><button id="redo" aria-label="Redo" title="Redo (Ctrl+Shift+Z)" disabled>↷</button><span class="divider"></span><button id="zoom-out" aria-label="Zoom out">−</button><button id="fit" title="Fit image">Fit</button><button id="zoom-in" aria-label="Zoom in">+</button></div></div>
+      <div class="canvas-wrap" id="canvas-wrap"><canvas id="canvas" aria-label="Draw cap and body example boxes, or select detections to review" tabindex="0"></canvas><div class="empty-state" id="empty-state"><div class="empty-graphic" aria-hidden="true"><span class="bottle one"></span><span class="bottle two"></span><span class="bottle three"></span><i></i></div><p>Your shelf, a little clearer.</p><span>Upload an image to start counting.</span></div><div class="busy" id="busy" hidden><span class="spinner"></span><strong>Following the evidence…</strong><span id="busy-detail">Detecting bodies and caps. This can take a moment.</span></div></div>
+      <div class="image-footer"><div class="legend"><span><i class="green"></i>Counted</span><span><i class="teal"></i>Paired cap</span><span><i class="amber"></i>Review</span></div><span id="canvas-help">Drag to mark · Space + drag to pan · Scroll to zoom</span></div>
+      <div class="result-bar" id="result-bar" hidden><span id="baseline-label"></span><span id="timing-label"></span></div>
+    </section>
+    <aside class="review-panel panel">
+      <div class="panel-heading"><span class="step">03</span><h2>Review the evidence</h2></div>
+      <div class="review-tools"><button class="tool" id="inspect-tool" data-tool="inspect">↖ Select object</button><button class="tool" id="add-tool" data-tool="add">+ Add missing bottle</button></div>
+      <label class="sr-only" for="filter">Filter objects</label><select id="filter"><option value="review">Needs review</option><option value="all">All evidence</option><option value="accepted">Counted</option><option value="rejected">Dismissed</option></select>
+      <div class="object-list" id="object-list"><p class="list-empty">Detections will appear here after analysis.</p></div>
+      <section id="selected-object" class="selected-object" hidden><div class="selected-title"><strong id="selected-title"></strong><span id="selected-score"></span></div><p id="selected-reason"></p><div class="review-buttons"><button id="confirm" class="primary">Confirm bottle</button><button id="dismiss" class="secondary">Dismiss</button><button id="restore" class="secondary" hidden>Restore for review</button></div><div id="pair-controls"><label for="pair-body">Belongs to a detected body?</label><select id="pair-body"></select><button class="secondary" id="pair">Pair with body</button></div><button class="text-button" id="unpair" hidden>Remove cap–body link</button></section>
+      <div class="export-area"><button class="secondary" id="save-project" disabled>Save project <span>↓</span></button><button class="text-button" id="load-project">Open saved project</button><input type="file" id="project-input" accept=".json,application/json" hidden><div class="export-row"><button id="export-png" disabled>Image ↗</button><button id="export-csv" disabled>CSV ↗</button></div></div>
+    </aside>
+  </section>
+  <div class="message" role="status" id="message" hidden></div>
+  <footer><span>CAPBODY COUNTER <span class="footer-dot">·</span> Research prototype</span><span>Matching & review workflow built on <a href="https://github.com/niki-amini-naieni/CountGDPlusPlus" target="_blank" rel="noopener">CountGD++ ↗</a></span></footer>
+</main>
+<dialog id="method-dialog"><div class="dialog-top"><span class="eyebrow">THE METHOD</span><button id="close-dialog" aria-label="Close method explanation">×</button></div><h2>Two kinds of evidence.<br>One reviewed count.</h2><ol><li><b>Show a cap.</b> Mark one to three examples. The same CountGD++ model detects bodies and caps in two separate passes.</li><li><b>Connect the evidence.</b> Geometry and one-to-one assignment link nearby caps to bodies. A linked cap adds no extra bottle.</li><li><b>Resolve uncertainty.</b> Unmatched caps and questionable bodies stay outside the count until you confirm or dismiss them.</li></ol><p>Green boxes are automatic predictions, not verified inventory. The model can confuse cups and cans with bottles. Fully hidden objects cannot be recovered by this workflow.</p><a href="/docs" target="_blank" rel="noopener">Explore the API ↗</a></dialog>
+</body></html>
